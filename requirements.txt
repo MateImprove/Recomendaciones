@@ -1,0 +1,8 @@
+streamlit
+pandas
+docxtpl
+openpyxl
+google-cloud-aiplatform
+google-cloud-storage
+vertexai
+
