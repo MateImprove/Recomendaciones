@@ -16,4 +16,6 @@ EXPOSE 8501
 
 # Define el comando para iniciar Streamlit usando la variable de entorno PORT
 # Esto corrige el error de "misconfigured port"
-ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=8080", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=$PORT", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+
+
