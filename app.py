@@ -16,7 +16,7 @@ from vertexai.preview.generative_models import GenerativeModel, Part
 
 # --- CONFIGURACIÓN DE LA PÁGINA DE STREAMLIT ---
 st.set_page_config(
-    page_title="Ensamblador de fichas técnicas Google Vertex AI",
+    page_title="Ensamblador de Fichas Técnicas Google Vertex AI",
     page_icon="🤖",
     layout="wide"
 )
@@ -137,7 +137,7 @@ def construir_prompt_paso3_recomendaciones(que_evalua_sintetizado, analisis_cent
     )
 
 # --- INTERFAZ PRINCIPAL DE STREAMLIT ---
-st.title("🤖 Ensamblador de Fichas Técnicas con IA")
+st.title("🤖 Ensamblador de Fichas Técnicas con Google Vertex IA")
 st.markdown("Una aplicación para enriquecer datos pedagógicos y generar fichas personalizadas.")
 
 if 'df_enriquecido' not in st.session_state:
