@@ -1,4 +1,4 @@
-# Utiliza una imagen base de Python 3.9 ligera para el contenedor
+# Utiliza una imagen base de Python 3.9 ligera para el contenedor 1
 FROM python:3.9-slim
 
 # Establece el directorio de trabajo dentro del contenedor
@@ -17,5 +17,6 @@ EXPOSE 8501
 # Define el comando para iniciar Streamlit usando la variable de entorno PORT
 # Esto corrige el error de "misconfigured port"
 ENTRYPOINT ["streamlit", "run", "app.py", "--server.port=$PORT", "--server.enableCORS=false", "--server.enableXsrfProtection=false"]
+
 
 
