@@ -211,8 +211,8 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
         else:
             st.success("¡Prompts cargados con éxito desde los archivos!")
             
-            model_pro = GenerativeModel("gemini-1.5-pro-latest")
-            model_flash = GenerativeModel("gemini-1.5-pro-latest")
+            model_pro = GenerativeModel("gemini-2.0-flash")
+            model_flash = GenerativeModel("gemini-2.0-flash-lite")
 
             with st.spinner("Procesando archivo Excel y preparando datos..."):
                 df = pd.read_excel(archivo_excel)
