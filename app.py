@@ -22,7 +22,6 @@ st.set_page_config(
 )
 
 # --- VARIABLES DE ENTORNO ---
-# Estas variables se configurarán en tu entorno de despliegue (Cloud Run).
 GCP_PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 GCP_LOCATION = os.environ.get("GCP_LOCATION")
 GCP_STORAGE_BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
@@ -51,12 +50,9 @@ def leer_prompt_desde_gcs(nombre_archivo):
             st.error(f"Error: El archivo de prompt '{nombre_archivo}' no se encontró en el bucket '{GCP_STORAGE_BUCKET}'.")
             return None
 
-        # Intenta descargar y leer el contenido del archivo
         contenido_prompt = blob.download_as_text()
         return contenido_prompt
     except Exception as e:
-        # ---- ESTA ES LA MODIFICACIÓN CLAVE ----
-        # Si algo falla al intentar leer, mostramos el error técnico exacto.
         st.error(f"Error al LEER el archivo '{nombre_archivo}'. Causa raíz:")
         st.error(f"Error detallado: {e}")
         return None
@@ -81,7 +77,7 @@ def subir_a_cloud_storage(data_buffer, file_name, content_type):
         return None
 
 def construir_prompt_paso1_analisis_central(fila, prompt_template):
-    """Paso 1: Genera la Ruta Cognitiva y el Análisis de Distractores, guiado por un prompt externo."""
+    """Paso 1: Genera el análisis para CADA opción, guiado por un prompt externo."""
     fila = fila.fillna('')
     
     return prompt_template.format(
@@ -104,12 +100,8 @@ def construir_prompt_paso1_analisis_central(fila, prompt_template):
 def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila, prompt_template):
     """Paso 2: Sintetiza el "Qué Evalúa" a partir del análisis central, guiado por un prompt externo."""
     fila = fila.fillna('')
-    try:
-        header_distractores = "Análisis de Opciones No Válidas:"
-        idx_distractores = analisis_central_generado.find(header_distractores)
-        ruta_cognitiva_texto = analisis_central_generado[:idx_distractores].strip() if idx_distractores != -1 else analisis_central_generado
-    except:
-        ruta_cognitiva_texto = analisis_central_generado
+    # Usamos todo el análisis para darle más contexto a la síntesis
+    ruta_cognitiva_texto = analisis_central_generado
 
     return prompt_template.format(
         ruta_cognitiva_texto=ruta_cognitiva_texto,
@@ -119,7 +111,7 @@ def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila, 
     )
 
 def construir_prompt_paso3_recomendaciones(que_evalua_sintetizado, analisis_central_generado, fila, prompt_template):
-    """Paso 3: Genera las recomendaciones, guiado por un prompt externo."""
+    """Paso 3: Genera las tres recomendaciones, guiado por un prompt externo."""
     fila = fila.fillna('')
     return prompt_template.format(
         que_evalua_sintetizado=que_evalua_sintetizado,
@@ -151,62 +143,39 @@ if 'prompts_cache' not in st.session_state:
 st.sidebar.header("🔑 Configuración")
 st.info("Esta aplicación usa Google Cloud Storage para leer los prompts y guardar los resultados.")
 
-# --- PANEL DE DIAGNÓSTICO ---
 with st.sidebar.expander("🔍 Panel de Diagnóstico de Sistema", expanded=True):
     st.write("Verificando la configuración y el acceso a los prompts...")
-
-    # 1. Verificar Variables de Entorno
     st.subheader("1. Variables de Entorno")
     bucket_name = os.environ.get("GCP_STORAGE_BUCKET")
     project_id = os.environ.get("GCP_PROJECT_ID")
-    
-    if bucket_name:
-        st.success(f"Bucket: `{bucket_name}`")
-    else:
-        st.error("La variable GCP_STORAGE_BUCKET no está configurada.")
+    if bucket_name: st.success(f"Bucket: `{bucket_name}`")
+    else: st.error("La variable GCP_STORAGE_BUCKET no está configurada.")
+    if project_id: st.success(f"Proyecto: `{project_id}`")
+    else: st.error("La variable GCP_PROJECT_ID no está configurada.")
 
-    if project_id:
-        st.success(f"Proyecto: `{project_id}`")
-    else:
-        st.error("La variable GCP_PROJECT_ID no está configurada.")
-
-    # 2. Verificar Acceso a Archivos en el Bucket
     st.subheader("2. Acceso a Archivos de Prompts")
     if bucket_name:
         try:
             storage_client = storage.Client()
             bucket = storage_client.bucket(bucket_name)
-            
-            files_to_check = [
-                "analisis-central.txt",
-                "sintesis-que-evalua.txt",
-                "recomendaciones.txt"
-            ]
-            
+            files_to_check = ["analisis-central.txt", "sintesis-que-evalua.txt", "recomendaciones.txt"]
             all_files_ok = True
             for file in files_to_check:
                 blob = bucket.blob(file)
-                if blob.exists():
-                    st.success(f"✅ {file} - Encontrado.")
+                if blob.exists(): st.success(f"✅ {file} - Encontrado.")
                 else:
                     st.error(f"❌ {file} - NO Encontrado.")
                     all_files_ok = False
-            
             if not all_files_ok:
-                 st.warning("Al menos un archivo no fue encontrado. Revisa los nombres y que estén en la raíz del bucket.")
-
+                st.warning("Al menos un archivo no fue encontrado. Revisa los nombres y que estén en la raíz del bucket.")
         except Exception as e:
             st.error("🛑 Error al intentar conectar con el bucket o listar archivos.")
             st.code(f"Error detallado: {e}")
     else:
         st.warning("No se puede verificar el acceso a archivos porque la variable del bucket no está configurada.")
 
-# --- FIN DEL PANEL DE DIAGNÓSTICO ---
-
-# Inicializa Vertex AI una sola vez
 if 'vertex_initialized' not in st.session_state:
     try:
-        # Asegurarse que las variables de entorno no estén vacías
         if not GCP_PROJECT_ID or not GCP_LOCATION:
             st.sidebar.error("Las variables de entorno GCP_PROJECT_ID o GCP_LOCATION no están configuradas.")
             st.session_state.vertex_initialized = False
@@ -242,17 +211,21 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
         else:
             st.success("¡Prompts cargados con éxito desde los archivos!")
             
-            # Creamos las instancias de los modelos de Gemini
-            model_pro = GenerativeModel("gemini-2.0-flash")
-            model_flash = GenerativeModel("gemini-2.0-flash-lite")
+            model_pro = GenerativeModel("gemini-1.5-flash-001")
+            model_flash = GenerativeModel("gemini-1.5-flash-001")
 
             with st.spinner("Procesando archivo Excel y preparando datos..."):
                 df = pd.read_excel(archivo_excel)
                 for col in df.columns:
                     if df[col].dtype == 'object':
                         df[col] = df[col].apply(limpiar_html)
-
-                columnas_nuevas = ["Que_Evalua", "Justificacion_Correcta", "Analisis_Distractores", "Recomendacion_Fortalecer", "Recomendacion_Avanzar"]
+                
+                # --- MODIFICACIÓN 1: Definir todas las nuevas columnas ---
+                columnas_nuevas = [
+                    "Que_Evalua", "Justificacion_Correcta", "Analisis_Distractores",
+                    "Justificacion_A", "Justificacion_B", "Justificacion_C", "Justificacion_D",
+                    "Recomendacion_Fortalecer", "Recomendacion_Avanzar", "oportunidad_de_mejora"
+                ]
                 for col in columnas_nuevas:
                     if col not in df.columns:
                         df[col] = ""
@@ -268,22 +241,43 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
 
                 with st.container(border=True):
                     try:
-                        # --- LLAMADA 1: ANÁLISIS CENTRAL (RUTA COGNITIVA Y DISTRACTORES) ---
+                        # --- LLAMADA 1: ANÁLISIS CENTRAL (CON JUSTIFICACIONES SEPARADAS) ---
                         st.write(f"**Paso 1/3:** Realizando análisis central del ítem...")
                         prompt_paso1 = construir_prompt_paso1_analisis_central(fila, st.session_state.prompts_cache['analisis'])
                         response_paso1 = model_pro.generate_content(prompt_paso1)
                         analisis_central = response_paso1.text.strip()
                         time.sleep(1) 
 
-                        header_correcta = "Ruta Cognitiva Correcta:"
-                        header_distractores = "Análisis de Opciones No Válidas:"
-                        idx_distractores = analisis_central.find(header_distractores)
+                        # --- MODIFICACIÓN 1: Parsear justificaciones individuales ---
+                        justificaciones = {}
+                        opciones = ['A', 'B', 'C', 'D']
+                        for opt in opciones:
+                            # Usamos regex para encontrar el contenido de cada justificación
+                            pattern = re.compile(rf'\[JUSTIFICACION_{opt}\](.*?)(?=\[JUSTIFICACION_[A-D]\]|$)', re.DOTALL | re.IGNORECASE)
+                            match = pattern.search(analisis_central)
+                            if match:
+                                justificaciones[opt] = match.group(1).strip()
+                            else:
+                                justificaciones[opt] = f"No se encontró la justificación para la opción {opt}."
                         
-                        if idx_distractores == -1:
-                            raise ValueError("No se encontró el separador 'Análisis de Opciones No Válidas' en la respuesta del paso 1.")
-
-                        ruta_cognitiva = analisis_central[len(header_correcta):idx_distractores].strip()
-                        analisis_distractores = analisis_central[idx_distractores:].strip()
+                        clave_correcta = str(fila.get('AlternativaClave', '')).strip().upper()
+                        
+                        df.loc[i, "Justificacion_A"] = justificaciones.get('A', '')
+                        df.loc[i, "Justificacion_B"] = justificaciones.get('B', '')
+                        df.loc[i, "Justificacion_C"] = justificaciones.get('C', '')
+                        df.loc[i, "Justificacion_D"] = justificaciones.get('D', '')
+                        
+                        # Asignar la justificación correcta y construir el análisis de distractores
+                        if clave_correcta in justificaciones:
+                            df.loc[i, "Justificacion_Correcta"] = justificaciones[clave_correcta]
+                            distractores_text = []
+                            for opt, just in justificaciones.items():
+                                if opt != clave_correcta:
+                                    distractores_text.append(f"**Opción {opt}:** {just}")
+                            df.loc[i, "Analisis_Distractores"] = "\n\n".join(distractores_text)
+                        else:
+                            df.loc[i, "Justificacion_Correcta"] = "Clave no encontrada en las justificaciones."
+                            df.loc[i, "Analisis_Distractores"] = "Error al procesar distractores."
 
                         # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
                         st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
@@ -298,30 +292,38 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                         response_paso3 = model_flash.generate_content(prompt_paso3)
                         recomendaciones = response_paso3.text.strip()
                         
-                        titulo_avanzar = "RECOMENDACIÓN PARA AVANZAR"
-                        idx_avanzar = recomendaciones.upper().find(titulo_avanzar)
+                        # --- MODIFICACIÓN 2: Parsear TRES recomendaciones ---
+                        fortalecer, avanzar, oportunidad = "No generada", "No generada", "No generada"
                         
-                        if idx_avanzar == -1:
-                            raise ValueError("No se encontró el separador 'RECOMENDACIÓN PARA AVANZAR' en la respuesta del paso 3.")
+                        idx_avanzar = recomendaciones.upper().find("RECOMENDACIÓN PARA AVANZAR")
+                        idx_oportunidad = recomendaciones.upper().find("OPORTUNIDAD DE MEJORA")
 
-                        fortalecer = recomendaciones[:idx_avanzar].strip()
-                        avanzar = recomendaciones[idx_avanzar:].strip()
+                        if idx_avanzar != -1 and idx_oportunidad != -1:
+                            fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
+                            avanzar = recomendaciones[idx_avanzar:idx_oportunidad].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
+                            oportunidad = recomendaciones[idx_oportunidad:].replace("OPORTUNIDAD DE MEJORA", "").strip()
+                        elif idx_avanzar != -1: # Si solo encuentra avanzar pero no oportunidad
+                            fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
+                            avanzar = recomendaciones[idx_avanzar:].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
+                        else: # Si no encuentra ninguna de las dos, todo es fortalecer
+                            fortalecer = recomendaciones.replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
 
                         # --- GUARDAR TODO EN EL DATAFRAME ---
                         df.loc[i, "Que_Evalua"] = que_evalua
-                        df.loc[i, "Justificacion_Correcta"] = ruta_cognitiva
-                        df.loc[i, "Analisis_Distractores"] = analisis_distractores
                         df.loc[i, "Recomendacion_Fortalecer"] = fortalecer
                         df.loc[i, "Recomendacion_Avanzar"] = avanzar
+                        df.loc[i, "oportunidad_de_mejora"] = oportunidad
                         st.success(f"Ítem {item_id} procesado con éxito.")
 
                     except Exception as e:
                         st.error(f"Ocurrió un error procesando el ítem {item_id}: {e}")
-                        df.loc[i, "Que_Evalua"] = "ERROR EN PROCESAMIENTO"
-                        df.loc[i, "Justificacion_Correcta"] = f"Error: {e}"
-                        df.loc[i, "Analisis_Distractores"] = "ERROR EN PROCESAMIENTO"
-                        df.loc[i, "Recomendacion_Fortalecer"] = "ERROR EN PROCESAMIENTO"
-                        df.loc[i, "Recomendacion_Avanzar"] = "ERROR EN PROCESAMIENTO"
+                        # Llenar con mensajes de error para fácil identificación
+                        df.loc[i, "Que_Evalua"] = f"ERROR: {e}"
+                        df.loc[i, "Justificacion_Correcta"] = "ERROR"
+                        df.loc[i, "Analisis_Distractores"] = "ERROR"
+                        df.loc[i, "Recomendacion_Fortalecer"] = "ERROR"
+                        df.loc[i, "Recomendacion_Avanzar"] = "ERROR"
+                        df.loc[i, "oportunidad_de_mejora"] = "ERROR"
             
             progress_bar_main.progress(1.0, text="¡Proceso completado!")
             st.session_state.df_enriquecido = df
@@ -360,7 +362,6 @@ if st.session_state.df_enriquecido is not None and archivo_plantilla is not None
                     total_docs = len(df_final)
                     progress_bar_zip = st.progress(0, text="Iniciando ensamblaje...")
                     for i, fila in df_final.iterrows():
-                        # Para cada fila, volvemos a cargar la plantilla desde los bytes originales
                         plantilla_bytes.seek(0)
                         doc = DocxTemplate(plantilla_bytes)
                         
