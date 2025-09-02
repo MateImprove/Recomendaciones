@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# nuevo código
 
 import streamlit as st
 import pandas as pd
@@ -139,11 +138,6 @@ if 'zip_buffer' not in st.session_state:
     st.session_state.zip_buffer = None
 if 'prompts_cache' not in st.session_state:
     st.session_state.prompts_cache = {}
-# --- AÑADE ESTAS LÍNEAS ---
-if 'processing_started' not in st.session_state:
-    st.session_state.processing_started = False
-if 'current_index' not in st.session_state:
-    st.session_state.current_index = 0
 
 # --- PASO 0: Configuración y Validación ---
 st.sidebar.header("🔑 Configuración")
@@ -200,29 +194,33 @@ with col1:
     archivo_excel = st.file_uploader("Sube tu Excel con los datos base", type=["xlsx"])
 with col2:
     archivo_plantilla = st.file_uploader("Sube tu Plantilla de Word", type=["docx"])
-# --- ESTE ES EL NUEVO CÓDIGO COMPLETO PARA EL PASO 2 ---
-st.header("Paso 2: Enriquece tus Datos con IA")
 
-# El botón ahora solo PREPARA los datos y activa el proceso
+# --- PASO 2: Enriquecimiento con IA ---
+st.header("Paso 2: Enriquece tus Datos con IA")
 if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_state.vertex_initialized or not archivo_excel)):
     if not archivo_excel:
         st.warning("Por favor, sube un archivo Excel para continuar.")
     else:
-        with st.spinner("Cargando prompts desde Google Cloud Storage..."):
+        with st.spinner("Cargando prompts desde los archivos en Google Cloud Storage..."):
             st.session_state.prompts_cache['analisis'] = leer_prompt_desde_gcs("analisis-central.txt")
             st.session_state.prompts_cache['sintesis'] = leer_prompt_desde_gcs("sintesis-que-evalua.txt")
             st.session_state.prompts_cache['recomendaciones'] = leer_prompt_desde_gcs("recomendaciones.txt")
 
         if not all(st.session_state.prompts_cache.values()):
-            st.error("No se pudieron cargar todos los prompts. Verifica los archivos en el bucket.")
+            st.error("No se pudieron cargar todos los prompts desde los archivos .txt en el bucket. Verifica que los archivos existan y los nombres sean correctos.")
         else:
-            st.success("¡Prompts cargados con éxito!")
-            with st.spinner("Preparando datos del Excel..."):
+            st.success("¡Prompts cargados con éxito desde los archivos!")
+            
+            model_pro = GenerativeModel("gemini-2.0-flash")
+            model_flash = GenerativeModel("gemini-2.0-flash-lite")
+
+            with st.spinner("Procesando archivo Excel y preparando datos..."):
                 df = pd.read_excel(archivo_excel)
                 for col in df.columns:
                     if df[col].dtype == 'object':
                         df[col] = df[col].apply(limpiar_html)
                 
+                # --- MODIFICACIÓN 1: Definir todas las nuevas columnas ---
                 columnas_nuevas = [
                     "Que_Evalua", "Justificacion_Correcta", "Analisis_Distractores",
                     "Justificacion_A", "Justificacion_B", "Justificacion_C", "Justificacion_D",
@@ -231,113 +229,105 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                 for col in columnas_nuevas:
                     if col not in df.columns:
                         df[col] = ""
-                
-                st.session_state.df_enriquecido = df
-                st.session_state.current_index = 0
-                st.session_state.processing_started = True
-                st.rerun()
+                st.success("Datos limpios y listos.")
 
-# Este es el nuevo motor que procesa los ítems UNO por UNO
-if st.session_state.get('processing_started'):
-    df = st.session_state.df_enriquecido
-    total_filas = len(df)
-    current_i = st.session_state.current_index
+            progress_bar_main = st.progress(0, text="Iniciando Proceso...")
+            total_filas = len(df)
 
-    if current_i >= total_filas:
-        st.success("🎉 ¡Proceso completado para todos los ítems! 🎉")
-        st.info("Ahora puedes proceder al Paso 3 para subir los resultados a la nube.")
-        st.balloons()
-        st.session_state.processing_started = False 
-        st.rerun()
-    else:
-        fila_actual = df.iloc[current_i]
-        item_id = fila_actual.get('ItemId', current_i + 1)
-        
-        st.markdown("---")
-        st.progress((current_i + 1) / total_filas, text=f"Procesando ítem {current_i + 1} de {total_filas}")
-        st.subheader(f"⚙️ Procesando Ítem: {item_id}")
+            for i, fila in df.iterrows():
+                item_id = fila.get('ItemId', i + 1)
+                st.markdown(f"--- \n ### Procesando Ítem: **{item_id}**")
+                progress_bar_main.progress((i + 1) / total_filas, text=f"Procesando ítem {i+1}/{total_filas}")
 
-        with st.container(border=True):
-            try:
-                model_pro = GenerativeModel("gemini-1.5-pro-preview-0409")
-                model_flash = GenerativeModel("gemini-1.5-flash-preview-0514")
+                with st.container(border=True):
+                    try:
+                        # --- LLAMADA 1: ANÁLISIS CENTRAL (CON JUSTIFICACIONES SEPARADAS) ---
+                        st.write(f"**Paso 1/3:** Realizando análisis central del ítem...")
+                        prompt_paso1 = construir_prompt_paso1_analisis_central(fila, st.session_state.prompts_cache['analisis'])
+                        response_paso1 = model_pro.generate_content(prompt_paso1)
+                        analisis_central = response_paso1.text.strip()
+                        time.sleep(1) 
 
-                # --- LLAMADA 1: ANÁLISIS CENTRAL ---
-                st.write(f"**Paso 1/3:** Realizando análisis central del ítem...")
-                prompt_paso1 = construir_prompt_paso1_analisis_central(fila_actual, st.session_state.prompts_cache['analisis'])
-                response_paso1 = model_pro.generate_content(prompt_paso1)
-                analisis_central = response_paso1.text.strip()
-                time.sleep(1)
+                        # --- MODIFICACIÓN 1: Parsear justificaciones individuales ---
+                        justificaciones = {}
+                        opciones = ['A', 'B', 'C', 'D']
+                        for opt in opciones:
+                            # Usamos regex para encontrar el contenido de cada justificación
+                            pattern = re.compile(rf'\[JUSTIFICACION_{opt}\](.*?)(?=\[JUSTIFICACION_[A-D]\]|$)', re.DOTALL | re.IGNORECASE)
+                            match = pattern.search(analisis_central)
+                            if match:
+                                justificaciones[opt] = match.group(1).strip()
+                            else:
+                                justificaciones[opt] = f"No se encontró la justificación para la opción {opt}."
+                        
+                        clave_correcta = str(fila.get('AlternativaClave', '')).strip().upper()
+                        
+                        df.loc[i, "Justificacion_A"] = justificaciones.get('A', '')
+                        df.loc[i, "Justificacion_B"] = justificaciones.get('B', '')
+                        df.loc[i, "Justificacion_C"] = justificaciones.get('C', '')
+                        df.loc[i, "Justificacion_D"] = justificaciones.get('D', '')
+                        
+                        # Asignar la justificación correcta y construir el análisis de distractores
+                        if clave_correcta in justificaciones:
+                            df.loc[i, "Justificacion_Correcta"] = justificaciones[clave_correcta]
+                            distractores_text = []
+                            for opt, just in justificaciones.items():
+                                if opt != clave_correcta:
+                                    distractores_text.append(f"**Opción {opt}:** {just}")
+                            df.loc[i, "Analisis_Distractores"] = "\n\n".join(distractores_text)
+                        else:
+                            df.loc[i, "Justificacion_Correcta"] = "Clave no encontrada en las justificaciones."
+                            df.loc[i, "Analisis_Distractores"] = "Error al procesar distractores."
 
-                justificaciones = {}
-                opciones = ['A', 'B', 'C', 'D']
-                for opt in opciones:
-                    pattern = re.compile(rf'\[JUSTIFICACION_{opt}\](.*?)(?=\[JUSTIFICACION_[A-D]\]|$)', re.DOTALL | re.IGNORECASE)
-                    match = pattern.search(analisis_central)
-                    if match: justificaciones[opt] = match.group(1).strip()
-                    else: justificaciones[opt] = f"No se encontró la justificación para la opción {opt}."
-                
-                clave_correcta = str(fila_actual.get('AlternativaClave', '')).strip().upper()
-                
-                df.loc[current_i, "Justificacion_A"] = justificaciones.get('A', '')
-                df.loc[current_i, "Justificacion_B"] = justificaciones.get('B', '')
-                df.loc[current_i, "Justificacion_C"] = justificaciones.get('C', '')
-                df.loc[current_i, "Justificacion_D"] = justificaciones.get('D', '')
-                
-                if clave_correcta in justificaciones:
-                    df.loc[current_i, "Justificacion_Correcta"] = justificaciones[clave_correcta]
-                    distractores_text = []
-                    for opt, just in justificaciones.items():
-                        if opt != clave_correcta:
-                            distractores_text.append(f"**Opción {opt}:** {just}")
-                    df.loc[current_i, "Analisis_Distractores"] = "\n\n".join(distractores_text)
-                else:
-                    df.loc[current_i, "Justificacion_Correcta"] = "Clave no encontrada."
-                    df.loc[current_i, "Analisis_Distractores"] = "Error al procesar."
+                        # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
+                        st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
+                        prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila, st.session_state.prompts_cache['sintesis'])
+                        response_paso2 = model_flash.generate_content(prompt_paso2)
+                        que_evalua = response_paso2.text.strip()
+                        time.sleep(1)
+                        
+                        # --- LLAMADA 3: GENERACIÓN DE RECOMENDACIONES ---
+                        st.write(f"**Paso 3/3:** Generando recomendaciones pedagógicas...")
+                        prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila, st.session_state.prompts_cache['recomendaciones'])
+                        response_paso3 = model_flash.generate_content(prompt_paso3)
+                        recomendaciones = response_paso3.text.strip()
+                        
+                        # --- MODIFICACIÓN 2: Parsear TRES recomendaciones ---
+                        fortalecer, avanzar, oportunidad = "No generada", "No generada", "No generada"
+                        
+                        idx_avanzar = recomendaciones.upper().find("RECOMENDACIÓN PARA AVANZAR")
+                        idx_oportunidad = recomendaciones.upper().find("OPORTUNIDAD DE MEJORA")
 
-                # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
-                st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
-                prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila_actual, st.session_state.prompts_cache['sintesis'])
-                response_paso2 = model_flash.generate_content(prompt_paso2)
-                que_evalua = response_paso2.text.strip()
-                time.sleep(1)
-                
-                # --- LLAMADA 3: GENERACIÓN DE RECOMENDACIONES ---
-                st.write(f"**Paso 3/3:** Generando recomendaciones...")
-                prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila_actual, st.session_state.prompts_cache['recomendaciones'])
-                response_paso3 = model_flash.generate_content(prompt_paso3)
-                recomendaciones = response_paso3.text.strip()
-                
-                fortalecer, avanzar, oportunidad = "No generada", "No generada", "No generada"
-                idx_avanzar = recomendaciones.upper().find("RECOMENDACIÓN PARA AVANZAR")
-                idx_oportunidad = recomendaciones.upper().find("OPORTUNIDAD DE MEJORA")
+                        if idx_avanzar != -1 and idx_oportunidad != -1:
+                            fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
+                            avanzar = recomendaciones[idx_avanzar:idx_oportunidad].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
+                            oportunidad = recomendaciones[idx_oportunidad:].replace("OPORTUNIDAD DE MEJORA", "").strip()
+                        elif idx_avanzar != -1: # Si solo encuentra avanzar pero no oportunidad
+                            fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
+                            avanzar = recomendaciones[idx_avanzar:].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
+                        else: # Si no encuentra ninguna de las dos, todo es fortalecer
+                            fortalecer = recomendaciones.replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
 
-                if idx_avanzar != -1 and idx_oportunidad != -1:
-                    fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
-                    avanzar = recomendaciones[idx_avanzar:idx_oportunidad].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
-                    oportunidad = recomendaciones[idx_oportunidad:].replace("OPORTUNIDAD DE MEJORA", "").strip()
-                elif idx_avanzar != -1:
-                    fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
-                    avanzar = recomendaciones[idx_avanzar:].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
-                else:
-                    fortalecer = recomendaciones.replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
+                        # --- GUARDAR TODO EN EL DATAFRAME ---
+                        df.loc[i, "Que_Evalua"] = que_evalua
+                        df.loc[i, "Recomendacion_Fortalecer"] = fortalecer
+                        df.loc[i, "Recomendacion_Avanzar"] = avanzar
+                        df.loc[i, "oportunidad_de_mejora"] = oportunidad
+                        st.success(f"Ítem {item_id} procesado con éxito.")
 
-                df.loc[current_i, "Que_Evalua"] = que_evalua
-                df.loc[current_i, "Recomendacion_Fortalecer"] = fortalecer
-                df.loc[current_i, "Recomendacion_Avanzar"] = avanzar
-                df.loc[current_i, "oportunidad_de_mejora"] = oportunidad
-                st.success(f"Análisis del Ítem {item_id} completado.")
-                
-            except Exception as e:
-                st.error(f"Ocurrió un error procesando el ítem {item_id}: {e}")
-                df.loc[current_i, "Que_Evalua"] = f"ERROR: {e}"
-                
-            st.session_state.df_enriquecido = df
+                    except Exception as e:
+                        st.error(f"Ocurrió un error procesando el ítem {item_id}: {e}")
+                        # Llenar con mensajes de error para fácil identificación
+                        df.loc[i, "Que_Evalua"] = f"ERROR: {e}"
+                        df.loc[i, "Justificacion_Correcta"] = "ERROR"
+                        df.loc[i, "Analisis_Distractores"] = "ERROR"
+                        df.loc[i, "Recomendacion_Fortalecer"] = "ERROR"
+                        df.loc[i, "Recomendacion_Avanzar"] = "ERROR"
+                        df.loc[i, "oportunidad_de_mejora"] = "ERROR"
             
-        st.markdown("---")
-        if st.button(f"✅ Procesar Siguiente Ítem ({current_i + 2}/{total_filas})", type="primary"):
-            st.session_state.current_index += 1
-            st.rerun()
+            progress_bar_main.progress(1.0, text="¡Proceso completado!")
+            st.session_state.df_enriquecido = df
+            st.balloons()
 
 # --- PASO 3: Subida a Cloud Storage y Verificación ---
 if st.session_state.df_enriquecido is not None:
