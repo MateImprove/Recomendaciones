@@ -11,7 +11,7 @@ from io import BytesIO
 # --- Importaciones de Google Cloud ---
 import vertexai
 from google.cloud import storage
-from vertexai.preview.generative_models import GenerativeModel, Part
+from vertexai.generative_models import GenerativeModel, Part
 
 # --- CONFIGURACIÓN DE LA PÁGINA DE STREAMLIT ---
 st.set_page_config(
@@ -24,6 +24,14 @@ st.set_page_config(
 GCP_PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 GCP_LOCATION = os.environ.get("GCP_LOCATION")
 GCP_STORAGE_BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
+
+# --- DICCIONARIO DE MODELOS ---
+# Se usan los nombres de modelo más recientes y estándar para asegurar compatibilidad.
+MODEL_OPTIONS = {
+    "Gemini 1.5 Flash (Rápido y económico)": "gemini-1.5-flash-001",
+    "Gemini 1.5 Pro (Potente y avanzado)": "gemini-1.5-pro-001",
+}
+
 
 # --- FUNCIONES DE LÓGICA ---
 
@@ -196,6 +204,25 @@ with col2:
 
 # --- PASO 2: Enriquecimiento con IA ---
 st.header("Paso 2: Enriquece tus Datos con IA")
+
+# --- NUEVO: Selección de Modelos ---
+st.subheader("Selección de Modelos de IA")
+col_model1, col_model2 = st.columns(2)
+with col_model1:
+    modelo_analisis_nombre = st.selectbox(
+        "Modelo para Análisis Central (Tarea principal)",
+        options=list(MODEL_OPTIONS.keys()),
+        index=1,  # Default a Gemini 1.5 Pro por ser más potente
+        help="Elige el modelo para la tarea más compleja de analizar las justificaciones. Pro es más potente, Flash es más rápido."
+    )
+with col_model2:
+    modelo_secundario_nombre = st.selectbox(
+        "Modelo para Síntesis y Recomendaciones (Tareas secundarias)",
+        options=list(MODEL_OPTIONS.keys()),
+        index=0, # Default a Gemini 1.5 Flash por ser más rápido y económico
+        help="Elige el modelo para las tareas más rápidas. Flash es ideal para resúmenes y listas."
+    )
+
 if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_state.vertex_initialized or not archivo_excel)):
     if not archivo_excel:
         st.warning("Por favor, sube un archivo Excel para continuar.")
@@ -210,8 +237,18 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
         else:
             st.success("¡Prompts cargados con éxito desde los archivos!")
             
-            model_pro = GenerativeModel("gemini-2.0-flash")
-            model_flash = GenerativeModel("gemini-2.0-flash-lite")
+            # --- MODIFICADO: Inicializar modelos según la selección del usuario ---
+            try:
+                modelo_analisis_id = MODEL_OPTIONS[modelo_analisis_nombre]
+                modelo_secundario_id = MODEL_OPTIONS[modelo_secundario_nombre]
+                
+                model_analisis = GenerativeModel(modelo_analisis_id)
+                model_secundario = GenerativeModel(modelo_secundario_id)
+                st.info(f"Usando **{modelo_analisis_nombre}** para análisis y **{modelo_secundario_nombre}** para el resto.")
+            except Exception as e:
+                st.error(f"Error al inicializar los modelos de Vertex AI: {e}")
+                st.stop()
+
 
             with st.spinner("Procesando archivo Excel y preparando datos..."):
                 df = pd.read_excel(archivo_excel)
@@ -219,7 +256,7 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                     if df[col].dtype == 'object':
                         df[col] = df[col].apply(limpiar_html)
                 
-                # --- MODIFICACIÓN 1: Definir todas las nuevas columnas ---
+                # Definir todas las nuevas columnas
                 columnas_nuevas = [
                     "Que_Evalua", "Justificacion_Correcta", "Analisis_Distractores",
                     "Justificacion_A", "Justificacion_B", "Justificacion_C", "Justificacion_D",
@@ -243,11 +280,12 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                         # --- LLAMADA 1: ANÁLISIS CENTRAL (CON JUSTIFICACIONES SEPARADAS) ---
                         st.write(f"**Paso 1/3:** Realizando análisis central del ítem...")
                         prompt_paso1 = construir_prompt_paso1_analisis_central(fila, st.session_state.prompts_cache['analisis'])
-                        response_paso1 = model_pro.generate_content(prompt_paso1)
+                        # --- MODIFICADO: Usa el modelo de análisis seleccionado ---
+                        response_paso1 = model_analisis.generate_content(prompt_paso1)
                         analisis_central = response_paso1.text.strip()
                         time.sleep(1) 
 
-                        # --- MODIFICACIÓN 1: Parsear justificaciones individuales ---
+                        # Parsear justificaciones individuales
                         justificaciones = {}
                         opciones = ['A', 'B', 'C', 'D']
                         for opt in opciones:
@@ -281,17 +319,19 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                         # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
                         st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
                         prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila, st.session_state.prompts_cache['sintesis'])
-                        response_paso2 = model_flash.generate_content(prompt_paso2)
+                        # --- MODIFICADO: Usa el modelo secundario seleccionado ---
+                        response_paso2 = model_secundario.generate_content(prompt_paso2)
                         que_evalua = response_paso2.text.strip()
                         time.sleep(1)
                         
                         # --- LLAMADA 3: GENERACIÓN DE RECOMENDACIONES ---
                         st.write(f"**Paso 3/3:** Generando recomendaciones pedagógicas...")
                         prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila, st.session_state.prompts_cache['recomendaciones'])
-                        response_paso3 = model_flash.generate_content(prompt_paso3)
+                        # --- MODIFICADO: Usa el modelo secundario seleccionado ---
+                        response_paso3 = model_secundario.generate_content(prompt_paso3)
                         recomendaciones = response_paso3.text.strip()
                         
-                        # --- MODIFICACIÓN 2: Parsear TRES recomendaciones ---
+                        # Parsear TRES recomendaciones
                         fortalecer, avanzar, oportunidad = "No generada", "No generada", "No generada"
                         
                         idx_avanzar = recomendaciones.upper().find("RECOMENDACIÓN PARA AVANZAR")
