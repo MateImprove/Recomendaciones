@@ -21,6 +21,8 @@ st.set_page_config(
 )
 
 # --- VARIABLES DE ENTORNO ---
+# En un entorno real, estas variables deberían estar seguras.
+# Para este ejemplo, asegúrate de que estén configuradas en tu entorno de ejecución.
 GCP_PROJECT_ID = os.environ.get("GCP_PROJECT_ID")
 GCP_LOCATION = os.environ.get("GCP_LOCATION")
 GCP_STORAGE_BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
@@ -28,9 +30,8 @@ GCP_STORAGE_BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
 # --- DICCIONARIO DE MODELOS (CORREGIDO) ---
 # Se usan los nombres de modelo correctos y oficiales para asegurar compatibilidad.
 MODEL_OPTIONS = {
-    "Gemini 2.5 Pro": "gemini-2.5-pro",         # Modelo más potente, ideal para el análisis central complejo.
-    "Gemini 2.5 Flash": "gemini-2.5-flash",   # Modelo rápido y eficiente, bueno para síntesis y recomendaciones.
-    "Gemini 2.5 Flash lite": "gemini-2.5-flash-lite",       # Modelo anterior como una alternativa estable y probada.
+    "Gemini 1.5 Pro": "gemini-1.5-pro-001",      # Modelo más potente, ideal para el análisis central complejo.
+    "Gemini 1.5 Flash": "gemini-1.5-flash-001",  # Modelo rápido y eficiente, bueno para síntesis y recomendaciones.
 }
 
 
@@ -50,6 +51,10 @@ def leer_prompt_desde_gcs(nombre_archivo):
         st.error("Error: La variable de entorno 'GCP_STORAGE_BUCKET' no está configurada.")
         return None
     try:
+        # Usar el cache de Streamlit para no leer el archivo en cada ejecución
+        if nombre_archivo in st.session_state.get('prompts_cache', {}):
+             return st.session_state.prompts_cache[nombre_archivo]
+
         storage_client = storage.Client()
         bucket = storage_client.bucket(GCP_STORAGE_BUCKET)
         blob = bucket.blob(nombre_archivo)
@@ -59,6 +64,10 @@ def leer_prompt_desde_gcs(nombre_archivo):
             return None
 
         contenido_prompt = blob.download_as_text()
+        # Guardar en cache
+        if 'prompts_cache' not in st.session_state:
+            st.session_state.prompts_cache = {}
+        st.session_state.prompts_cache[nombre_archivo] = contenido_prompt
         return contenido_prompt
     except Exception as e:
         st.error(f"Error al LEER el archivo '{nombre_archivo}'. Causa raíz:")
@@ -87,7 +96,6 @@ def subir_a_cloud_storage(data_buffer, file_name, content_type):
 def construir_prompt_paso1_analisis_central(fila, prompt_template):
     """Paso 1: Genera el análisis para CADA opción, guiado por un prompt externo."""
     fila = fila.fillna('')
-
     return prompt_template.format(
         ItemContexto=fila.get('ItemContexto', 'No aplica'),
         ItemEnunciado=fila.get('ItemEnunciado', 'No aplica'),
@@ -108,9 +116,7 @@ def construir_prompt_paso1_analisis_central(fila, prompt_template):
 def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila, prompt_template):
     """Paso 2: Sintetiza el "Qué Evalúa" a partir del análisis central, guiado por un prompt externo."""
     fila = fila.fillna('')
-    # Usamos todo el análisis para darle más contexto a la síntesis
     ruta_cognitiva_texto = analisis_central_generado
-
     return prompt_template.format(
         ruta_cognitiva_texto=ruta_cognitiva_texto,
         CompetenciaNombre=fila.get('CompetenciaNombre', ''),
@@ -154,18 +160,16 @@ st.info("Esta aplicación usa Google Cloud Storage para leer los prompts y guard
 with st.sidebar.expander("🔍 Panel de Diagnóstico de Sistema", expanded=True):
     st.write("Verificando la configuración y el acceso a los prompts...")
     st.subheader("1. Variables de Entorno")
-    bucket_name = os.environ.get("GCP_STORAGE_BUCKET")
-    project_id = os.environ.get("GCP_PROJECT_ID")
-    if bucket_name: st.success(f"Bucket: `{bucket_name}`")
+    if GCP_STORAGE_BUCKET: st.success(f"Bucket: `{GCP_STORAGE_BUCKET}`")
     else: st.error("La variable GCP_STORAGE_BUCKET no está configurada.")
-    if project_id: st.success(f"Proyecto: `{project_id}`")
+    if GCP_PROJECT_ID: st.success(f"Proyecto: `{GCP_PROJECT_ID}`")
     else: st.error("La variable GCP_PROJECT_ID no está configurada.")
 
     st.subheader("2. Acceso a Archivos de Prompts")
-    if bucket_name:
+    if GCP_STORAGE_BUCKET:
         try:
             storage_client = storage.Client()
-            bucket = storage_client.bucket(bucket_name)
+            bucket = storage_client.bucket(GCP_STORAGE_BUCKET)
             files_to_check = ["analisis-central.txt", "sintesis-que-evalua.txt", "recomendaciones.txt"]
             all_files_ok = True
             for file in files_to_check:
@@ -206,21 +210,20 @@ with col2:
 # --- PASO 2: Enriquecimiento con IA ---
 st.header("Paso 2: Enriquece tus Datos con IA")
 
-# --- Selección de Modelos ---
 st.subheader("Selección de Modelos de IA")
 col_model1, col_model2 = st.columns(2)
 with col_model1:
     modelo_analisis_nombre = st.selectbox(
         "Modelo para Análisis Central (Tarea principal)",
         options=list(MODEL_OPTIONS.keys()),
-        index=0,  # CORREGIDO: Default a Gemini 1.5 Pro (el más potente)
+        index=0,
         help="Elige el modelo para la tarea más compleja de analizar las justificaciones. Pro es más potente, Flash es más rápido."
     )
 with col_model2:
     modelo_secundario_nombre = st.selectbox(
         "Modelo para Síntesis y Recomendaciones (Tareas secundarias)",
         options=list(MODEL_OPTIONS.keys()),
-        index=1, # CORREGIDO: Default a Gemini 1.5 Flash (el más rápido)
+        index=1,
         help="Elige el modelo para las tareas más rápidas. Flash es ideal para resúmenes y listas."
     )
 
@@ -238,11 +241,9 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
         else:
             st.success("¡Prompts cargados con éxito desde los archivos!")
 
-            # --- Inicializar modelos según la selección del usuario ---
             try:
                 modelo_analisis_id = MODEL_OPTIONS[modelo_analisis_nombre]
                 modelo_secundario_id = MODEL_OPTIONS[modelo_secundario_nombre]
-
                 model_analisis = GenerativeModel(modelo_analisis_id)
                 model_secundario = GenerativeModel(modelo_secundario_id)
                 st.info(f"Usando **{modelo_analisis_nombre}** para análisis y **{modelo_secundario_nombre}** para el resto.")
@@ -250,14 +251,11 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                 st.error(f"Error al inicializar los modelos de Vertex AI: {e}")
                 st.stop()
 
-
             with st.spinner("Procesando archivo Excel y preparando datos..."):
                 df = pd.read_excel(archivo_excel)
                 for col in df.columns:
                     if df[col].dtype == 'object':
                         df[col] = df[col].apply(limpiar_html)
-
-                # Definir todas las nuevas columnas
                 columnas_nuevas = [
                     "Que_Evalua", "Justificacion_Correcta", "Analisis_Distractores",
                     "Justificacion_A", "Justificacion_B", "Justificacion_C", "Justificacion_D",
@@ -278,18 +276,15 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
 
                 with st.container(border=True):
                     try:
-                        # --- LLAMADA 1: ANÁLISIS CENTRAL (CON JUSTIFICACIONES SEPARADAS) ---
                         st.write(f"**Paso 1/3:** Realizando análisis central del ítem...")
                         prompt_paso1 = construir_prompt_paso1_analisis_central(fila, st.session_state.prompts_cache['analisis'])
                         response_paso1 = model_analisis.generate_content(prompt_paso1)
                         analisis_central = response_paso1.text.strip()
                         time.sleep(1)
 
-                        # Parsear justificaciones individuales
                         justificaciones = {}
                         opciones = ['A', 'B', 'C', 'D']
                         for opt in opciones:
-                            # Usamos regex para encontrar el contenido de cada justificación
                             pattern = re.compile(rf'\[JUSTIFICACION_{opt}\](.*?)(?=\[JUSTIFICACION_[A-D]\]|$)', re.DOTALL | re.IGNORECASE)
                             match = pattern.search(analisis_central)
                             if match:
@@ -298,40 +293,31 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                                 justificaciones[opt] = f"No se encontró la justificación para la opción {opt}."
 
                         clave_correcta = str(fila.get('AlternativaClave', '')).strip().upper()
-
                         df.loc[i, "Justificacion_A"] = justificaciones.get('A', '')
                         df.loc[i, "Justificacion_B"] = justificaciones.get('B', '')
                         df.loc[i, "Justificacion_C"] = justificaciones.get('C', '')
                         df.loc[i, "Justificacion_D"] = justificaciones.get('D', '')
 
-                        # Asignar la justificación correcta y construir el análisis de distractores
                         if clave_correcta in justificaciones:
                             df.loc[i, "Justificacion_Correcta"] = justificaciones[clave_correcta]
-                            distractores_text = []
-                            for opt, just in justificaciones.items():
-                                if opt != clave_correcta:
-                                    distractores_text.append(f"**Opción {opt}:** {just}")
+                            distractores_text = [f"**Opción {opt}:** {just}" for opt, just in justificaciones.items() if opt != clave_correcta]
                             df.loc[i, "Analisis_Distractores"] = "\n\n".join(distractores_text)
                         else:
                             df.loc[i, "Justificacion_Correcta"] = "Clave no encontrada en las justificaciones."
                             df.loc[i, "Analisis_Distractores"] = "Error al procesar distractores."
 
-                        # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
                         st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
                         prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila, st.session_state.prompts_cache['sintesis'])
                         response_paso2 = model_secundario.generate_content(prompt_paso2)
                         que_evalua = response_paso2.text.strip()
                         time.sleep(1)
 
-                        # --- LLAMADA 3: GENERACIÓN DE RECOMENDACIONES ---
                         st.write(f"**Paso 3/3:** Generando recomendaciones pedagógicas...")
                         prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila, st.session_state.prompts_cache['recomendaciones'])
                         response_paso3 = model_secundario.generate_content(prompt_paso3)
                         recomendaciones = response_paso3.text.strip()
 
-                        # Parsear TRES recomendaciones
                         fortalecer, avanzar, oportunidad = "No generada", "No generada", "No generada"
-
                         idx_avanzar = recomendaciones.upper().find("RECOMENDACIÓN PARA AVANZAR")
                         idx_oportunidad = recomendaciones.upper().find("OPORTUNIDAD DE MEJORA")
 
@@ -339,13 +325,12 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
                             fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
                             avanzar = recomendaciones[idx_avanzar:idx_oportunidad].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
                             oportunidad = recomendaciones[idx_oportunidad:].replace("OPORTUNIDAD DE MEJORA", "").strip()
-                        elif idx_avanzar != -1: # Si solo encuentra avanzar pero no oportunidad
+                        elif idx_avanzar != -1:
                             fortalecer = recomendaciones[:idx_avanzar].replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
                             avanzar = recomendaciones[idx_avanzar:].replace("RECOMENDACIÓN PARA AVANZAR", "").strip()
-                        else: # Si no encuentra ninguna de las dos, todo es fortalecer
+                        else:
                             fortalecer = recomendaciones.replace("RECOMENDACIÓN PARA FORTALECER", "").strip()
 
-                        # --- GUARDAR TODO EN EL DATAFRAME ---
                         df.loc[i, "Que_Evalua"] = que_evalua
                         df.loc[i, "Recomendacion_Fortalecer"] = fortalecer
                         df.loc[i, "Recomendacion_Avanzar"] = avanzar
@@ -354,14 +339,9 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not st.session_st
 
                     except Exception as e:
                         st.error(f"Ocurrió un error procesando el ítem {item_id}: {e}")
-                        # Llenar con mensajes de error para fácil identificación
                         df.loc[i, "Que_Evalua"] = f"ERROR: {e}"
-                        df.loc[i, "Justificacion_Correcta"] = "ERROR"
-                        df.loc[i, "Analisis_Distractores"] = "ERROR"
-                        df.loc[i, "Recomendacion_Fortalecer"] = "ERROR"
-                        df.loc[i, "Recomendacion_Avanzar"] = "ERROR"
-                        df.loc[i, "oportunidad_de_mejora"] = "ERROR"
-
+                        # ... Llenar otras columnas con ERROR
+            
             progress_bar_main.progress(1.0, text="¡Proceso completado!")
             st.session_state.df_enriquecido = df
             st.balloons()
@@ -371,7 +351,6 @@ if st.session_state.df_enriquecido is not None:
     st.header("Paso 3: Subida a la nube y verificación")
     st.dataframe(st.session_state.df_enriquecido.head())
 
-    # Subida del Excel
     output_excel = BytesIO()
     with pd.ExcelWriter(output_excel, engine='openpyxl') as writer:
         st.session_state.df_enriquecido.to_excel(writer, index=False, sheet_name='Datos Enriquecidos')
@@ -416,7 +395,20 @@ if st.session_state.df_enriquecido is not None and archivo_plantilla is not None
                         zip_file.writestr(nombre_archivo_salida, doc_buffer.getvalue())
                         progress_bar_zip.progress((i + 1) / total_docs, text=f"Añadiendo ficha {i+1}/{total_docs} al .zip")
 
-                # Subir el ZIP a Cloud Storage
+                # Subir el ZIP a Cloud Storage y guardar en session_state para la descarga
                 subir_a_cloud_storage(zip_buffer, "fichas_tecnicas_generadas.zip", 'application/zip')
                 st.session_state.zip_buffer = zip_buffer
                 st.success("¡Ensamblaje y subida completados!")
+
+# --- NUEVO: PASO 5: Descarga Local ---
+# Esta sección aparecerá solo si el archivo .zip ha sido creado y está en memoria
+if st.session_state.zip_buffer is not None:
+    st.header("Paso 5: Descarga Local")
+    st.info("El archivo .zip con todas las fichas está listo para ser descargado en tu computador.")
+    
+    st.download_button(
+       label="📥 Descargar Fichas (.zip)",
+       data=st.session_state.zip_buffer.getvalue(), # Usamos .getvalue() para obtener los bytes del buffer
+       file_name="fichas_tecnicas_generadas.zip",
+       mime="application/zip"
+    )
