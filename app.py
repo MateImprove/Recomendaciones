@@ -9,10 +9,9 @@ import time
 import zipfile
 from io import BytesIO
 
-# --- Importaciones de Google Cloud ---
+# --- Importaciones de Google Cloud (CORREGIDAS) ---
 import vertexai
-from vertexai.generative_models import GenerativeModel, Part
-from vertexai.generative_models._generative_models import SafetySettings, HarmCategory
+from vertexai.generative_models import GenerativeModel, Part, HarmCategory, HarmBlockThreshold
 
 # --- CONFIGURACIÓN DE LA PÁGINA DE STREAMLIT ---
 st.set_page_config(
@@ -50,12 +49,12 @@ def setup_model(project_id, location, model_name):
             "max_output_tokens": 8192,
         }
         
-        # Mapeo de categorías de seguridad al formato del SDK de Vertex AI
+        # Forma correcta de definir las configuraciones de seguridad
         safety_settings = {
-            HarmCategory.HARM_CATEGORY_HARASSMENT: SafetySettings.HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_HATE_SPEECH: SafetySettings.HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: SafetySettings.HarmBlockThreshold.BLOCK_ONLY_HIGH,
-            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: SafetySettings.HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+            HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
         }
 
         model = GenerativeModel(
@@ -256,7 +255,7 @@ location = st.sidebar.text_input(
 selected_model_key = st.sidebar.selectbox(
     "Elige el modelo de Gemini a utilizar",
     options=list(MODEL_OPTIONS.keys()),
-    help="Gemini 1.5 Pro es más potente, mientras que Flash es más rápido y económico."
+    help="Gemini 2.5 Pro es más potente, mientras que Flash es más rápido y económico."
 )
 
 with st.sidebar.expander("ℹ️ ¿Cómo funciona la autenticación?"):
