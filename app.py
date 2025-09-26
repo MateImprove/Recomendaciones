@@ -69,7 +69,6 @@ def setup_model(project_id, location, model_name):
         return None
 
 # --- EJEMPLOS DE ALTA CALIDAD (FEW-SHOT PROMPTING) ---
-# (Estos bloques de texto son idénticos a la versión anterior, los incluyo para que el código esté completo)
 
 EJEMPLOS_ANALISIS_PREMIUM = """
 A continuación, te muestro ejemplos de análisis de la más alta calidad. Tu respuesta debe seguir este mismo estilo, tono y nivel de detalle.
@@ -90,6 +89,40 @@ Análisis de Opciones No Válidas:
 - **Opción B:** No es correcta porque, en este cuento, el "narrador" es la voz que cuenta la historia, no un personaje que participe en los eventos del cuento. El relato está escrito en tercera persona y el narrador se mantiene fuera de la acción.
 - **Opción C:** No es correcta porque omite al primer personaje introducido y central en la trama: "un hombre" que construye el barquito y observa al "hombrecito". Sin este personaje, la secuencia de eventos no se establece.
 - **Opción D:** No es correcta porque, al igual que la opción B, incluye al "narrador" como personaje, lo cual es incorrecto. Además, omite al "hombrecito" y al ser con "unas pinzas", reduciendo el número de personajes activos en la historia.
+
+### EJEMPLO 2: LECTURA INFERENCIAL (TEXTO NARRATIVO-INFORMATIVO) ###
+**INSUMOS:**
+- Competencia: Comprensión de textos
+- Componente: Lectura inferencial
+- Evidencia: Integra y compara diferentes partes del texto y analiza la estructura para hacer inferencias.
+- Enunciado: Lee el siguiente fragmento del texto: “Los manglares están muriendo, por lo que el desequilibrio es cada vez mayor. La carretera lo cambió todo. Para construirla arrasaron veinte mil hectáreas de manglar...”. ¿Qué función cumple la parte subrayada dentro del fragmento?
+- Opciones: A: Señalar la causa de un problema medioambiental., B: Establecer una comparación entre dos acciones de un proceso., C: Mostrar la consecuencia del daño medioambiental., D: Explicar el motivo por el que se decidió realizar una acción.
+
+**RESULTADO ESPERADO:**
+Ruta Cognitiva Correcta:
+El estudiante debe comprender el contenido del fragmento y la estructura global del texto, para luego identificar cuál es la función que cumple dentro de esta. En este caso específico, el estudiante debe comprender que el fragmento señala la principal causa que ha llevado al desequilibrio del ecosistema de los manglares en la zona, y que este fragmento del texto justamente cumple con la función de señalar esa causa.
+
+Análisis de Opciones No Válidas:
+- **Opción B:** Es incorrecta porque la pregunta busca la causa del problema, no la comparación de acciones.
+- **Opción C:** Es incorrecta porque el estudiante confunde la causa con la consecuencia del problema medioambiental. Identifica un efecto del problema, pero no su origen.
+- **Opción D:** Es incorrecta porque se centra en la motivación detrás de una acción, en lugar de la causa del problema en sí mismo. La pregunta busca el origen del problema medioambiental.
+
+### EJEMPLO 3: LECTURA CRÍTICA (TEXTO NARRATIVO-INFORMATIVO) ###
+**INSUMOS:**
+- Competencia: Comprensión de textos
+- Componente: Lectura crítica
+- Evidencia: Evalúa la credibilidad, confiabilidad y objetividad del texto, emitiendo juicios críticos sobre la información.
+- Enunciado: ¿Por qué el autor cita el testimonio de Jesús Suárez en el texto?
+- Opciones: A: Porque es el vocero que la comunidad palafítica ha designado., B: Porque es causante de la situación que ocurre en la población., C: Porque al ser experto en ecosistemas acuáticos su opinión es confiable., D: Porque al ser investigador puede verificar lo dicho por otro testigo de los hechos.
+
+**RESULTADO ESPERADO:**
+Ruta Cognitiva Correcta:
+El estudiante analiza las opciones presentadas considerando la relación entre la justificación dada y la confiabilidad de la fuente. Evalúa la opción C y reconoce que la experticia en ecosistemas acuáticos otorga mayor credibilidad a la opinión de un individuo sobre una situación relacionada con este tema. Justifica la selección de la opción C al contrastarla con las demás opciones, considerando la relevancia de la experticia para la situación planteada.
+
+Análisis de Opciones No Válidas:
+- **Opción A:** Es incorrecta porque ser vocero no implica necesariamente tener el conocimiento experto para opinar sobre situaciones específicas.
+- **Opción B:** Es incorrecta porque ser causante de un problema no implica tener el conocimiento o la imparcialidad para analizarlo y ofrecer una opinión confiable.
+- **Opción D:** Es incorrecta porque la verificación de un testimonio en este contexto requiere una experticia específica en el tema, que en este caso es ecosistemas acuáticos.
 """
 
 EJEMPLOS_RECOMENDACIONES_PREMIUM = """
@@ -106,14 +139,33 @@ Para reforzar la habilidad de vincular diferentes elementos del contenido y desc
 
 RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
 Para consolidar la capacidad de identificar las funciones de los diferentes elementos que componen un texto no literario de carácter discontinuo, se sugiere fomentar la práctica de reorganizar textos desordenados. Los estudiantes pueden recibir fragmentos de una infografía que deben arreglar en el orden correcto, identificando la introducción, el desarrollo y la conclusión. Durante esta actividad, se pueden formular preguntas como: ¿Cuál fragmento introduce el tema? ¿Qué información proporciona esta imagen o gráfico? ¿Cómo se relaciona con el texto?
+
+### EJEMPLO 2 DE RECOMENDACIONES PERFECTAS (TEXTO INFORMATIVO) ###
+**INSUMOS:**
+- Qué Evalúa el Ítem: Este ítem evalúa la capacidad del estudiante para hacer una inferencia integrando información implícita presente en una parte del texto.
+- Evidencia: Integra y compara diferentes partes del texto y analiza la estructura para hacer inferencias.
+
+**RESULTADO ESPERADO:**
+RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN EL ÍTEM
+Para fortalecer la habilidad de hacer inferencias a partir de un segmento de un texto informativo, se sugiere implementar una dinámica de "lectura de pistas". Esta estrategia se enfoca en que los estudiantes identifiquen información implícita en fragmentos textuales cortos para inferir contextos o emociones que no se mencionan directamente. El docente puede presentar al grupo tres o cuatro fragmentos muy breves y evocadores (de noticias o crónicas) que insinúen una situación sin describirla por completo. Por ejemplo: "El teléfono sonó por décima vez. Al otro lado de la línea, solo se oía una respiración agitada. Afuera, la sirena de una ambulancia se acercaba". Los estudiantes, en parejas, leen el fragmento y discuten qué pueden deducir de la escena. Las preguntas orientadoras pueden ser: ¿Qué pistas te da el texto sobre el estado de ánimo de la persona?, ¿Qué crees que pasó justo antes de la escena descrita?
+
+RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
+Para avanzar en la habilidad de hacer inferencias complejas a partir de la comparación de diferentes partes de un texto, se sugiere proponer un análisis de perspectivas múltiples dentro de una misma crónica o texto informativo. El objetivo es que los estudiantes superen la inferencia local y aprendan a contrastar voces, datos o argumentos presentados en un mismo relato. El docente puede seleccionar una crónica periodística sobre un tema urbano actual que incluya las voces de distintos actores sociales (un vendedor, un residente, un funcionario). Los estudiantes deben leer el texto e identificar y comparar las diferentes posturas frente al mismo hecho. Las preguntas orientadoras pueden ser: ¿Qué similitudes y diferencias encuentras entre las perspectivas?, ¿Qué visión del problema se formaría un lector si el texto solo hubiera incluido una de estas voces?
 """
 
 # --- FUNCIONES DE PROMPTS SECUENCIALES ---
-# (Estas funciones son idénticas a la versión anterior)
 
 def construir_prompt_paso1_analisis_central(fila):
     """Paso 1: Genera la Ruta Cognitiva y el Análisis de Distractores, guiado por ejemplos."""
     fila = fila.fillna('')
+    descripcion_item = (
+        f"Enunciado: {fila.get('Enunciado', '')}\n"
+        f"A. {fila.get('OpcionA', '')}\n"
+        f"B. {fila.get('OpcionB', '')}\n"
+        f"C. {fila.get('OpcionC', '')}\n"
+        f"D. {fila.get('OpcionD', '')}\n"
+        f"Respuesta correcta: {fila.get('AlternativaClave', '')}"
+    )
     return f"""
 🎯 ROL DEL SISTEMA
 Eres un experto psicómetra y pedagogo. Tu misión es deconstruir un ítem de evaluación siguiendo el estilo y la calidad de los ejemplos proporcionados.
@@ -155,12 +207,12 @@ FASE 2: ANÁLISIS DE OPCIONES NO VÁLIDAS
 **REGLA CRÍTICA:** Responde únicamente con los dos títulos siguientes, en este orden y sin añadir texto adicional.
 
 Ruta Cognitiva Correcta:
-[Párrafo continuo y detallado.]
+[Párrafo continuo y detallado.] Debe describir como es la secuencia de procesos cognitivos. Ejemplo: Para resolver correctamente este ítem, el estudiante primero debe [verbo cognitivo 1]... Luego, necesita [verbo cognitivo 2]... Este proceso le permite [verbo cognitivo 3]..., lo que finalmente lo lleva a concluir que la opción [letra de la respuesta correcta] es la correcta porque [justificación final].
 
 Análisis de Opciones No Válidas:
-- **Opción [Letra del distractor]:** [Análisis del error]
+- **Opción [Letra del distractor]:** El estudiante podría escoger esta opción si comete un error de [naturaleza de la confusión u error], lo que lo lleva a pensar que [razonamiento erróneo]. Sin embargo, esto es incorrecto porque [razón clara y concisa].
 """
-
+    
 def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila):
     """Paso 2: Sintetiza el "Qué Evalúa" a partir del análisis central."""
     fila = fila.fillna('')
@@ -210,7 +262,16 @@ Eres un diseñador instruccional experto, especializado en crear actividades de 
 🧠 INSUMOS DE ENTRADA (Para el nuevo ítem):
 - Qué Evalúa el Ítem: {que_evalua_sintetizado}
 - Análisis Detallado del Ítem: {analisis_central_generado}
+- Texto/Fragmento: {fila.get('ItemContexto', 'No aplica')}
+- Descripción del Ítem: {fila.get('ItemEnunciado', 'No aplica')}
+- Componente: {fila.get('ComponenteNombre', 'No aplica')}
+- Competencia: {fila.get('CompetenciaNombre', '')}
+- Aprendizaje Priorizado: {fila.get('AfirmacionNombre', '')}
 - Evidencia de Aprendizaje: {fila.get('EvidenciaNombre', '')}
+- Tipología Textual (Solo para Lectura Crítica): {fila.get('Tipologia Textual', 'No aplica')}
+- Grado Escolar: {fila.get('ItemGradoId', '')}
+- Análisis de Errores Comunes: {fila.get('Analisis_Errores', 'No aplica')}
+- Respuesta correcta: {fila.get('AlternativaClave', 'No aplica')}
 
 📝 INSTRUCCIONES PARA GENERAR LAS RECOMENDACIONES
 Basándote en los ejemplos de alta calidad y los nuevos insumos, genera dos recomendaciones (Fortalecer y Avanzar) que cumplan con estas reglas inviolables:
@@ -219,14 +280,42 @@ Basándote en los ejemplos de alta calidad y los nuevos insumos, genera dos reco
 3.  **GENERALIDAD Y CREATIVIDAD:** Las actividades deben ser novedosas, lúdicas, no típicas, y aplicables a textos generales.
 4.  **REDACCIÓN IMPERSONAL.**
 
+### 1. Recomendación para FORTALECER 💪
+- **Objetivo:** Descomponer el proceso cognitivo descrito en el 'Qué Evalúa' en pasos manejables.
+- **Actividad:** Diseña una actividad que sirva de andamio para la habilidad central. No le pongas ningun nombre a la actividad.
+- **Preguntas:** Formula preguntas que guíen el razonamiento paso a paso.
+- **Contexto Pedagógico:** La actividad debe ser un microcosmos de dicha evidencia, pero simplificada. Debes **descomponer el proceso cognitivo en pasos manejables**.
+- **Actividad Propuesta:** Diseña una actividad de lectura que sea **novedosa, creativa y lúdica**. **Evita explícitamente ejercicios típicos** como cuestionarios, llenar espacios en blanco o buscar ideas principales de forma tradicional. La actividad debe ser útil para los profesores.
+- **Preguntas Orientadoras:** Formula preguntas que funcionen como un **"paso a paso" del razonamiento**, guiando al estudiante a través del proceso de forma sutil.
+
+
+### 2. Recomendación para AVANZAR 🚀
+- **Objetivo:** Crear una progresión cognitiva clara desde Fortalecer, dentro de la misma Competencia.
+- **Objetivo Central:** Asegurar una **progresión cognitiva clara y directa en la que el estudiante avanza** cuando se compara con la actividad de Fortalecer.
+- **Contexto Pedagógico:** La actividad para Avanzar debe ser la **evolución natural y más compleja de la habilidad trabajada en Fortalecer**. La conexión entre ambas debe ser explícita y lógica.  No le pongas ningun nombre a la actividad.
+- **Actividad Propuesta:** Diseña un desafío intelectual de lectura o análisis comparativo que sea **estimulante y poco convencional**. La actividad debe promover el pensamiento crítico y la transferencia de habilidades de una manera que no sea habitual en el aula.
+- **Preguntas Orientadoras:** Formula preguntas abiertas que exijan **evaluación, síntesis, aplicación o metacognición**, demostrando un salto cualitativo respecto a las preguntas de Fortalecer.
+
 ✍️ FORMATO DE SALIDA DE LAS RECOMENDACIONES
 **IMPORTANTE: Responde de forma directa, usando obligatoriamente la siguiente estructura. No añadas texto adicional.**
+- **Redacción Impersonal:** Utiliza siempre una redacción profesional e impersonal (ej. "se sugiere (sin mencionar el docente)", "la tarea consiste en", "se entregan tarjetas").
+- **Sin Conclusiones:** Termina directamente con la lista de preguntas.
 
 RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN EL ÍTEM
-[Descripción de la actividad para fortalecer]
+Para fortalecer la habilidad de [verbo clave extraído de la Evidencia de Aprendizaje], se sugiere [descripción de la estrategia de andamiaje para ese proceso exacto].
+Una actividad que se puede hacer es: [Descripción detallada de la actividad novedosa y creativa, que no implica escritura].
+Las preguntas orientadoras para esta actividad, entre otras, pueden ser:
+- [Pregunta 1: Que guíe el primer paso del proceso cognitivo]
+- [Pregunta 2: Que ayude a analizar un componente clave del proceso]
+- [Pregunta 3: Que conduzca a la conclusión del proceso base]
 
 RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
-[Descripción de la actividad para avanzar]
+Para avanzar desde [proceso cognitivo de Fortalecer] hacia la habilidad de [verbo clave del proceso cognitivo superior], se sugiere [descripción de la estrategia de complejización].
+Una actividad que se puede hacer es: [Descripción detallada de la actividad estimulante y poco convencional, que no implique escritura].
+Las preguntas orientadoras para esta actividad, entre otras, pueden ser:
+- [Pregunta 1: De análisis o evaluación que requiera un razonamiento más profundo]
+- [Pregunta 2: De aplicación, comparación o transferencia a un nuevo contexto]
+- [Pregunta 3: De metacognición o pensamiento crítico sobre el proceso completo]
 """
 
 # --- INTERFAZ PRINCIPAL DE STREAMLIT ---
