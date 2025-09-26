@@ -30,8 +30,9 @@ GCP_STORAGE_BUCKET = os.environ.get("GCP_STORAGE_BUCKET")
 # --- DICCIONARIO DE MODELOS (CORREGIDO) ---
 # Se usan los nombres de modelo correctos y oficiales para asegurar compatibilidad.
 MODEL_OPTIONS = {
-    "Gemini 1.5 Pro": "gemini-1.5-pro-001",      # Modelo más potente, ideal para el análisis central complejo.
-    "Gemini 1.5 Flash": "gemini-1.5-flash-001",  # Modelo rápido y eficiente, bueno para síntesis y recomendaciones.
+    "Gemini 2.5 Pro": "gemini-2.5",      
+    "Gemini 2.5 Flash": "gemini-1.5-flash",  
+    "Gemini 2.5 Flash Lite": "gemini-1.5-flash-lite",  
 }
 
 
