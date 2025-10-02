@@ -83,7 +83,7 @@ A continuación, te muestro ejemplos de análisis de la más alta calidad. Tu re
 
 **RESULTADO ESPERADO:**
 Ruta Cognitiva Correcta:
-Para responder el ítem, el estudiante debe leer el cuento prestando atención a las entidades que realizan acciones o a quienes les suceden eventos en el texto. En el tercer párrafo, se menciona a "un hombre" que armó el barquito y a un "hombrecito diminuto" dentro de la botella. En el último párrafo, se describe que un "ojo enorme lo atisbaba desde fuera" al primer hombre y que "unas enormes pinzas que avanzaban hacia él". Este "ojo enorme" y las "enormes pinzas" implican la existencia de un tercer personaje, un ser que se encuentra mirando al primer personaje. El estudiante debe identificar a todos estos personajes que interactúan o son afectados por la trama.
+Para responder la pregunta, el estudiante debe leer el cuento prestando atención a las entidades que realizan acciones o a quienes les suceden eventos en el texto. En el tercer párrafo, se menciona a "un hombre" que armó el barquito y a un "hombrecito diminuto" dentro de la botella. En el último párrafo, se describe que un "ojo enorme lo atisbaba desde fuera" al primer hombre y que "unas enormes pinzas que avanzaban hacia él". Este "ojo enorme" y las "enormes pinzas" implican la existencia de un tercer personaje, un ser que se encuentra mirando al primer personaje. El estudiante debe identificar a todos estos personajes que interactúan o son afectados por la trama.
 
 Análisis de Opciones No Válidas:
 - **Opción B:** No es correcta porque, en este cuento, el "narrador" es la voz que cuenta la historia, no un personaje que participe en los eventos del cuento. El relato está escrito en tercera persona y el narrador se mantiene fuera de la acción.
@@ -130,26 +130,26 @@ A continuación, te muestro ejemplos de recomendaciones pedagógicas de la más 
 
 ### EJEMPLO 1 DE RECOMENDACIONES PERFECTAS (TEXTO DISCONTINUO) ###
 **INSUMOS:**
-- Qué Evalúa el Ítem: El ítem evalúa la habilidad del estudiante para relacionar diferentes elementos del contenido e identificar nueva información en textos no literarios.
+- Qué Evalúa la pregunta: la pregunta evalúa la habilidad del estudiante para relacionar diferentes elementos del contenido e identificar nueva información en textos no literarios.
 - Evidencia: Relaciona diferentes partes del texto para hacer inferencias sobre significados o sobre el propósito general.
 
 **RESULTADO ESPERADO:**
-RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN la pregunta
 Para reforzar la habilidad de vincular diferentes elementos del contenido y descubrir nuevas ideas, se sugiere la realización de actividades que impliquen el análisis de textos no literarios de carácter discontinuo como infografías. Los estudiantes podrían empezar por leer estas fuentes y marcar los datos que consideren relevantes. Posteriormente, en un esfuerzo colectivo, podrían construir un mapa conceptual que refleje la relación entre los diferentes datos resaltados. Finalmente, podrían trabajar en la identificación de las ideas principales y secundarias que emergen de este mapa, lo que les permitirá tener una comprensión más profunda del texto.
 
-RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN la pregunta
 Para consolidar la capacidad de identificar las funciones de los diferentes elementos que componen un texto no literario de carácter discontinuo, se sugiere fomentar la práctica de reorganizar textos desordenados. Los estudiantes pueden recibir fragmentos de una infografía que deben arreglar en el orden correcto, identificando la introducción, el desarrollo y la conclusión. Durante esta actividad, se pueden formular preguntas como: ¿Cuál fragmento introduce el tema? ¿Qué información proporciona esta imagen o gráfico? ¿Cómo se relaciona con el texto?
 
 ### EJEMPLO 2 DE RECOMENDACIONES PERFECTAS (TEXTO INFORMATIVO) ###
 **INSUMOS:**
-- Qué Evalúa el Ítem: Este ítem evalúa la capacidad del estudiante para hacer una inferencia integrando información implícita presente en una parte del texto.
+- Qué Evalúa la pregunta: Este ítem evalúa la capacidad del estudiante para hacer una inferencia integrando información implícita presente en una parte del texto.
 - Evidencia: Integra y compara diferentes partes del texto y analiza la estructura para hacer inferencias.
 
 **RESULTADO ESPERADO:**
-RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN la pregunta
 Para fortalecer la habilidad de hacer inferencias a partir de un segmento de un texto informativo, se sugiere implementar una dinámica de "lectura de pistas". Esta estrategia se enfoca en que los estudiantes identifiquen información implícita en fragmentos textuales cortos para inferir contextos o emociones que no se mencionan directamente. El docente puede presentar al grupo tres o cuatro fragmentos muy breves y evocadores (de noticias o crónicas) que insinúen una situación sin describirla por completo. Por ejemplo: "El teléfono sonó por décima vez. Al otro lado de la línea, solo se oía una respiración agitada. Afuera, la sirena de una ambulancia se acercaba". Los estudiantes, en parejas, leen el fragmento y discuten qué pueden deducir de la escena. Las preguntas orientadoras pueden ser: ¿Qué pistas te da el texto sobre el estado de ánimo de la persona?, ¿Qué crees que pasó justo antes de la escena descrita?
 
-RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN la pregunta
 Para avanzar en la habilidad de hacer inferencias complejas a partir de la comparación de diferentes partes de un texto, se sugiere proponer un análisis de perspectivas múltiples dentro de una misma crónica o texto informativo. El objetivo es que los estudiantes superen la inferencia local y aprendan a contrastar voces, datos o argumentos presentados en un mismo relato. El docente puede seleccionar una crónica periodística sobre un tema urbano actual que incluya las voces de distintos actores sociales (un vendedor, un residente, un funcionario). Los estudiantes deben leer el texto e identificar y comparar las diferentes posturas frente al mismo hecho. Las preguntas orientadoras pueden ser: ¿Qué similitudes y diferencias encuentras entre las perspectivas?, ¿Qué visión del problema se formaría un lector si el texto solo hubiera incluido una de estas voces?
 """
 
@@ -174,7 +174,7 @@ Eres un experto psicómetra y pedagogo. Tu misión es deconstruir un ítem de ev
 
 🧠 INSUMOS DE ENTRADA (Para el nuevo ítem que debes analizar):
 - Texto/Fragmento: {fila.get('ItemContexto', 'No aplica')}
-- Descripción del Ítem: {fila.get('ItemEnunciado', 'No aplica')}
+- Descripción dla pregunta: {fila.get('ItemEnunciado', 'No aplica')}
 - Componente: {fila.get('ComponenteNombre', 'No aplica')}
 - Competencia: {fila.get('CompetenciaNombre', '')}
 - Aprendizaje Priorizado: {fila.get('AfirmacionNombre', '')}
@@ -243,7 +243,7 @@ TAXONOMÍA DE REFERENCIA:
 📝 INSTRUCCIONES
 Basándote **exclusivamente** en el ANÁLISIS DE LA RUTA COGNITIVA, redacta una única frase (máximo 2 renglones) que resuma la habilidad principal que se está evaluando.
 - **Regla 1:** La frase debe comenzar obligatoriamente con "Este ítem evalúa la capacidad del estudiante para...".
-- **Regla 2:** La frase debe describir los **procesos cognitivos**, no debe contener especificamene ninguno de los elementos del texto o del ítem, busca en cambio palabras/expresiones genéricas en reemplazo de elementos del item/texto cuando es necesario.
+- **Regla 2:** La frase debe describir los **procesos cognitivos**, no debe contener especificamene ninguno de los elementos del texto o dla pregunta, busca en cambio palabras/expresiones genéricas en reemplazo de elementos del item/texto cuando es necesario.
 - **Regla 3:** Utiliza la TAXONOMÍA DE REFERENCIA para asegurar que el lenguaje sea preciso y alineado.
 
 ✍️ FORMATO DE SALIDA
@@ -255,15 +255,16 @@ def construir_prompt_paso3_recomendaciones(que_evalua_sintetizado, analisis_cent
     fila = fila.fillna('')
     return f"""
 🎯 ROL DEL SISTEMA
-Eres un diseñador instruccional experto, especializado en crear actividades de lectura novedosas, siguiendo el estándar de los ejemplos provistos.
+Eres un diseñador instruccional experto y un docente de aula con mucha experiencia. Tu especialidad es crear actividades de lectura que son novedosas, lúdicas y, sobre todo, prácticas y realizables en un salón de clases con recursos limitados.
 
 {EJEMPLOS_RECOMENDACIONES_PREMIUM}
 
 🧠 INSUMOS DE ENTRADA (Para el nuevo ítem):
-- Qué Evalúa el Ítem: {que_evalua_sintetizado}
-- Análisis Detallado del Ítem: {analisis_central_generado}
+# Se mantienen los insumos para dar contexto, pero las instrucciones forzarán a la IA a no usarlos literalmente.
+- Qué Evalúa la pregunta: {que_evalua_sintetizado}
+- Análisis Detallado dla pregunta: {analisis_central_generado}
 - Texto/Fragmento: {fila.get('ItemContexto', 'No aplica')}
-- Descripción del Ítem: {fila.get('ItemEnunciado', 'No aplica')}
+- Descripción dla pregunta: {fila.get('ItemEnunciado', 'No aplica')}
 - Componente: {fila.get('ComponenteNombre', 'No aplica')}
 - Competencia: {fila.get('CompetenciaNombre', '')}
 - Aprendizaje Priorizado: {fila.get('AfirmacionNombre', '')}
@@ -274,34 +275,28 @@ Eres un diseñador instruccional experto, especializado en crear actividades de 
 - Respuesta correcta: {fila.get('AlternativaClave', 'No aplica')}
 
 📝 INSTRUCCIONES PARA GENERAR LAS RECOMENDACIONES
-Basándote en los ejemplos de alta calidad y los nuevos insumos, genera dos recomendaciones (Fortalecer y Avanzar) que cumplan con estas reglas inviolables:
-1.  **FIDELIDAD A LA TAXONOMÍA:** Las actividades deben alinearse con el 'Qué Evalúa el Ítem'.
-2.  **CERO PRODUCCIÓN ESCRITA:** Deben ser actividades exclusivas de lectura, selección u organización oral.
-3.  **GENERALIDAD Y CREATIVIDAD:** Las actividades deben ser novedosas, lúdicas, no típicas, y aplicables a textos generales.
-4.  **REDACCIÓN IMPERSONAL.**
+Basándote en los ejemplos y los insumos, genera dos recomendaciones (Fortalecer y Avanzar) que cumplan con estas reglas inviolables:
+1.  **ABSTRACCIÓN DE LA HABILIDAD:** # <-- CAMBIO CLAVE 1: Desanclar del ítem.
+    Las actividades deben enfocarse en la habilidad cognitiva descrita en 'Qué Evalúa la pregunta', no en el contenido específico del 'Texto/Fragmento' o la 'Descripción dla pregunta'. Usa los insumos solo para entender la habilidad, pero diseña una actividad que se pueda aplicar a OTROS textos o contextos.
+    CRÍTICO: Evita usar las mismas situaciones expuestas en el ítem. Deben ser diferentes pero debene estar dentro del mismo campo cognitivo de lo que evalúa el ítem.
+    
+2.  **VIABILIDAD EN EL AULA:** # <-- CAMBIO CLAVE 2: Realismo y practicidad.
+    Las actividades deben ser 100% realizables dentro de un salón de clases estándar. Esto significa:
+    - **Cero Materiales:** No requieren preparación de materiales especiales (fichas, tarjetas, proyectores). Se basan en la discusión, el análisis oral o la interacción con un texto genérico.
+    - **Cero Tareas Externas:** No implican actividades fuera del aula, ni uso de tecnología.
+    - **La novedad está en la dinámica, no en los recursos.**
 
-### 1. Recomendación para FORTALECER 💪
-- **Objetivo:** Descomponer el proceso cognitivo descrito en el 'Qué Evalúa' en pasos manejables.
-- **Actividad:** Diseña una actividad que sirva de andamio para la habilidad central. No le pongas ningun nombre a la actividad.
-- **Preguntas:** Formula preguntas que guíen el razonamiento paso a paso.
-- **Contexto Pedagógico:** La actividad debe ser un microcosmos de dicha evidencia, pero simplificada. Debes **descomponer el proceso cognitivo en pasos manejables**.
-- **Actividad Propuesta:** Diseña una actividad de lectura que sea **novedosa, creativa y lúdica**. **Evita explícitamente ejercicios típicos** como cuestionarios, llenar espacios en blanco o buscar ideas principales de forma tradicional. La actividad debe ser útil para los profesores.
-- **Preguntas Orientadoras:** Formula preguntas que funcionen como un **"paso a paso" del razonamiento**, guiando al estudiante a través del proceso de forma sutil.
+3.  **CERO PRODUCCIÓN ESCRITA:** Deben ser actividades exclusivas de lectura, selección, debate corto, clasificación oral o argumentación.
 
+4.  **CREATIVIDAD BASADA EN EL ESCENARIO:** # <-- ESTA ES LA REGLA CLAVE MODIFICADA
+    La novedad y el factor lúdico deben residir en la **situación o el contexto** que se plantea, no necesariamente en el formato de la interacción.
+    - **EVITA** escenarios clichés o abstractos típicos de libros de texto. Por ejemplo, en lugar de "lanzar un dado 20 veces", que es un escenario aburrido...
+    - **FAVORECE** escenarios concretos, imaginativos y con una narrativa. Por ejemplo, para la misma habilidad de probabilidad, podrías proponer: "se organiza un pequeño 'casino' en clase con barajas de colores donde los estudiantes deben calcular sus posibilidades de ganar en diferentes juegos inventados". O "los estudiantes son exploradores que deben decidir qué camino tomar en una jungla basándose en las probabilidades de encontrar recursos o peligros".
+    - El objetivo es crear un "mini-mundo" o un reto temático donde se aplique la habilidad.
 
-### 2. Recomendación para AVANZAR 🚀
-- **Objetivo:** Crear una progresión cognitiva clara desde Fortalecer, dentro de la misma Competencia.
-- **Objetivo Central:** Asegurar una **progresión cognitiva clara y directa en la que el estudiante avanza** cuando se compara con la actividad de Fortalecer.
-- **Contexto Pedagógico:** La actividad para Avanzar debe ser la **evolución natural y más compleja de la habilidad trabajada en Fortalecer**. La conexión entre ambas debe ser explícita y lógica.  No le pongas ningun nombre a la actividad.
-- **Actividad Propuesta:** Diseña un desafío intelectual de lectura o análisis comparativo que sea **estimulante y poco convencional**. La actividad debe promover el pensamiento crítico y la transferencia de habilidades de una manera que no sea habitual en el aula.
-- **Preguntas Orientadoras:** Formula preguntas abiertas que exijan **evaluación, síntesis, aplicación o metacognición**, demostrando un salto cualitativo respecto a las preguntas de Fortalecer.
+5.  **REDACCIÓN IMPERSONAL.**
 
-✍️ FORMATO DE SALIDA DE LAS RECOMENDACIONES
-**IMPORTANTE: Responde de forma directa, usando obligatoriamente la siguiente estructura. No añadas texto adicional.**
-- **Redacción Impersonal:** Utiliza siempre una redacción profesional e impersonal (ej. "se sugiere (sin mencionar el docente)", "la tarea consiste en", "se entregan tarjetas").
-- **Sin Conclusiones:** Termina directamente con la lista de preguntas.
-
-RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA FORTALECER EL APRENDIZAJE EVALUADO EN la pregunta
 Para fortalecer la habilidad de [verbo clave extraído de la Evidencia de Aprendizaje], se sugiere [descripción de la estrategia de andamiaje para ese proceso exacto].
 Una actividad que se puede hacer es: [Descripción detallada de la actividad novedosa y creativa, que no implica escritura].
 Las preguntas orientadoras para esta actividad, entre otras, pueden ser:
@@ -309,7 +304,7 @@ Las preguntas orientadoras para esta actividad, entre otras, pueden ser:
 - [Pregunta 2: Que ayude a analizar un componente clave del proceso]
 - [Pregunta 3: Que conduzca a la conclusión del proceso base]
 
-RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN EL ÍTEM
+RECOMENDACIÓN PARA AVANZAR EN EL APRENDIZAJE EVALUADO EN la pregunta
 Para avanzar desde [proceso cognitivo de Fortalecer] hacia la habilidad de [verbo clave del proceso cognitivo superior], se sugiere [descripción de la estrategia de complejización].
 Una actividad que se puede hacer es: [Descripción detallada de la actividad estimulante y poco convencional, que no implique escritura].
 Las preguntas orientadoras para esta actividad, entre otras, pueden ser:
@@ -454,7 +449,7 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not project_id or
                         st.success(f"Ítem {item_id} procesado con éxito.")
 
                     except Exception as e:
-                        st.error(f"Ocurrió un error procesando el ítem {item_id}: {e}")
+                        st.error(f"Ocurrió un error procesando la pregunta {item_id}: {e}")
                         df.loc[i, "Que_Evalua"] = "ERROR EN PROCESAMIENTO"
                         # Puedes agregar más detalles del error si lo necesitas
                         df.loc[i, "Justificacion_Correcta"] = f"Error: {e}" 
