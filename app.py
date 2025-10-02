@@ -155,7 +155,7 @@ Para avanzar en la habilidad de hacer inferencias complejas a partir de la compa
 
 # --- FUNCIONES DE PROMPTS SECUENCIALES ---
 
-def construir_prompt_paso1_analisis_central(fila):
+def construir_prompt_paso1_analisis_central(fila, instruccion_adicional=""):
     """Paso 1: Genera la Ruta Cognitiva y el Análisis de Distractores, guiado por ejemplos."""
     fila = fila.fillna('')
     descripcion_item = (
@@ -166,6 +166,7 @@ def construir_prompt_paso1_analisis_central(fila):
         f"D. {fila.get('OpcionD', '')}\n"
         f"Respuesta correcta: {fila.get('AlternativaClave', '')}"
     )
+    instruccion_formateada = f"\n**Instrucción Adicional del Usuario:** {instruccion_adicional}\n" if instruccion_adicional else ""
     return f"""
 🎯 ROL DEL SISTEMA
 Eres un experto psicómetra y pedagogo. Tu misión es deconstruir un ítem de evaluación siguiendo el estilo y la calidad de los ejemplos proporcionados.
@@ -191,6 +192,7 @@ Eres un experto psicómetra y pedagogo. Tu misión es deconstruir un ítem de ev
 
 📝 INSTRUCCIONES
 Basándote en los ejemplos de alta calidad y los nuevos insumos, realiza el siguiente proceso en dos fases:
+{instruccion_formateada}
 
 FASE 1: RUTA COGNITIVA
 Describe, en un párrafo continuo y de forma impersonal, el procedimiento mental que un estudiante debe ejecutar para llegar a la respuesta correcta.
@@ -213,7 +215,7 @@ Análisis de Opciones No Válidas:
 - **Opción [Letra del distractor]:** El estudiante podría escoger esta opción si comete un error de [naturaleza de la confusión u error], lo que lo lleva a pensar que [razonamiento erróneo]. Sin embargo, esto es incorrecto porque [razón clara y concisa].
 """
     
-def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila):
+def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila, instruccion_adicional=""):
     """Paso 2: Sintetiza el "Qué Evalúa" a partir del análisis central."""
     fila = fila.fillna('')
     try:
@@ -222,7 +224,7 @@ def construir_prompt_paso2_sintesis_que_evalua(analisis_central_generado, fila):
         ruta_cognitiva_texto = analisis_central_generado[:idx_distractores].strip() if idx_distractores != -1 else analisis_central_generado
     except:
         ruta_cognitiva_texto = analisis_central_generado
-
+    instruccion_formateada = f"\n**Instrucción Adicional del Usuario:** {instruccion_adicional}\n" if instruccion_adicional else ""
     return f"""
 🎯 ROL DEL SISTEMA
 Eres un experto en evaluación que sintetiza análisis complejos en una sola frase concisa.
@@ -241,6 +243,7 @@ TAXONOMÍA DE REFERENCIA:
 - Evidencia de Aprendizaje: {fila.get('EvidenciaNombre', '')}
 
 📝 INSTRUCCIONES
+{instruccion_formateada}
 Basándote **exclusivamente** en el ANÁLISIS DE LA RUTA COGNITIVA, redacta una única frase (máximo 2 renglones) que resuma la habilidad principal que se está evaluando.
 - **Regla 1:** La frase debe comenzar obligatoriamente con "Este ítem evalúa la capacidad del estudiante para...".
 - **Regla 2:** La frase debe describir los **procesos cognitivos**, no debe contener especificamene ninguno de los elementos del texto o dla pregunta, busca en cambio palabras/expresiones genéricas en reemplazo de elementos del item/texto cuando es necesario.
@@ -250,9 +253,10 @@ Basándote **exclusivamente** en el ANÁLISIS DE LA RUTA COGNITIVA, redacta una 
 Responde únicamente con la frase solicitada, sin el título "Qué Evalúa".
 """
 
-def construir_prompt_paso3_recomendaciones(que_evalua_sintetizado, analisis_central_generado, fila):
+def construir_prompt_paso3_recomendaciones(que_evalua_sintetizado, analisis_central_generado, fila, instruccion_adicional=""):
     """Paso 3: Genera las recomendaciones, guiado por ejemplos."""
     fila = fila.fillna('')
+    instruccion_formateada = f"\n**Instrucción Adicional del Usuario:** {instruccion_adicional}\n" if instruccion_adicional else ""
     return f"""
 🎯 ROL DEL SISTEMA
 Eres un diseñador instruccional experto y un docente de aula con mucha experiencia. Tu especialidad es crear actividades de lectura que son novedosas, lúdicas y, sobre todo, prácticas y realizables en un salón de clases con recursos limitados.
@@ -275,6 +279,7 @@ Eres un diseñador instruccional experto y un docente de aula con mucha experien
 - Respuesta correcta: {fila.get('AlternativaClave', 'No aplica')}
 
 📝 INSTRUCCIONES PARA GENERAR LAS RECOMENDACIONES
+{instruccion_formateada}
 Basándote en los ejemplos y los insumos, genera dos recomendaciones (Fortalecer y Avanzar) que cumplan con estas reglas inviolables:
 1.  **ABSTRACCIÓN DE LA HABILIDAD:** # <-- CAMBIO CLAVE 1: Desanclar del ítem.
     Las actividades deben enfocarse en la habilidad cognitiva descrita en 'Qué Evalúa la pregunta', no en el contenido específico del 'Texto/Fragmento' o la 'Descripción dla pregunta'. Usa los insumos solo para entender la habilidad, pero diseña una actividad que se pueda aplicar a OTROS textos o contextos.
@@ -366,8 +371,27 @@ with col1:
 with col2:
     archivo_plantilla = st.file_uploader("Sube tu Plantilla de Word", type=["docx"])
 
-# --- PASO 2: Enriquecimiento con IA ---
+# --- PASO 2: Enriquecimiento con IA ---    
 st.header("Paso 2: Enriquece tus Datos con IA")
+# AÑADE ESTE BLOQUE
+with st.expander("💡 Opcional: Añadir Instrucciones Adicionales a la IA"):
+    st.markdown("Usa estos campos para guiar o refinar el trabajo de la IA en cada paso.")
+    instruccion_paso1 = st.text_area(
+        "Instrucciones para el Paso 1 (Análisis Central)",
+        placeholder="Ej: Presta especial atención a la ironía en el texto.",
+        help="Guía para la Ruta Cognitiva y el Análisis de Distractores."
+    )
+    instruccion_paso2 = st.text_area(
+        "Instrucciones para el Paso 2 (Síntesis 'Qué Evalúa')",
+        placeholder="Ej: Asegúrate de que la síntesis use el verbo 'interpretar'.",
+        help="Guía para la frase que resume la habilidad evaluada."
+    )
+    instruccion_paso3 = st.text_area(
+        "Instrucciones para el Paso 3 (Recomendaciones)",
+        placeholder="Ej: Orienta las recomendaciones hacia un enfoque colaborativo.",
+        help="Guía para el diseño de las actividades de Fortalecer y Avanzar."
+    )
+
 if st.button("🤖 Iniciar Análisis y Generación", disabled=(not project_id or not location or not archivo_excel)):
     if not project_id or not location:
         st.error("Por favor, completa la configuración de Google Cloud en la barra lateral izquierda.")
@@ -403,7 +427,8 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not project_id or
                     try:
                         # --- LLAMADA 1: ANÁLISIS CENTRAL ---
                         st.write(f"**Paso 1/3:** Realizando análisis central...")
-                        prompt_paso1 = construir_prompt_paso1_analisis_central(fila)
+                        # Pasa el contenido de la caja de texto a la función
+                        prompt_paso1 = construir_prompt_paso1_analisis_central(fila, instruccion_paso1) 
                         response_paso1 = model.generate_content(prompt_paso1)
                         analisis_central = response_paso1.text.strip()
                         time.sleep(1) 
@@ -420,14 +445,16 @@ if st.button("🤖 Iniciar Análisis y Generación", disabled=(not project_id or
 
                         # --- LLAMADA 2: SÍNTESIS DEL "QUÉ EVALÚA" ---
                         st.write(f"**Paso 2/3:** Sintetizando 'Qué Evalúa'...")
-                        prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila)
+                        # Pasa el contenido de la caja de texto a la función
+                        prompt_paso2 = construir_prompt_paso2_sintesis_que_evalua(analisis_central, fila, instruccion_paso2)
                         response_paso2 = model.generate_content(prompt_paso2)
                         que_evalua = response_paso2.text.strip()
                         time.sleep(1)
                         
                         # --- LLAMADA 3: GENERACIÓN DE RECOMENDACIONES ---
                         st.write(f"**Paso 3/3:** Generando recomendaciones...")
-                        prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila)
+                        # Pasa el contenido de la caja de texto a la función
+                        prompt_paso3 = construir_prompt_paso3_recomendaciones(que_evalua, analisis_central, fila, instruccion_paso3)
                         response_paso3 = model.generate_content(prompt_paso3)
                         recomendaciones = response_paso3.text.strip()
                         
